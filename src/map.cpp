@@ -36,6 +36,19 @@ int Map::getID(int r, int c) {
         return 0;
 }
 
+void Map::Draw() {
+    for (int r = 0; r < height_; r++) {
+        for (int c = 0; c < width_; c++) {
+            GameObject* o = getObject(r, c);
+            if (!o)
+                cout << " ";
+            else
+                o->Draw();
+        }
+        cout << endl;
+    }
+}
+
 bool Map::Parse(string fname) {
     ifstream in(fname);
     if (in.fail()) {

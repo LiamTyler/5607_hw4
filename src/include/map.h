@@ -16,6 +16,7 @@ class Map {
         Map(string fname);
         ~Map();
         bool Parse(string fname);
+        void Draw();
         
         int getID(int r, int c);
         int getWidth() { return width_; }

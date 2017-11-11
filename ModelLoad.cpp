@@ -65,8 +65,6 @@ bool fullscreen = false;
 int screen_width = 800;
 int screen_height = 600;
 
-void Win2PPM(int width, int height);
-
 int main(int argc, char *argv[]){
   SDL_Init(SDL_INIT_VIDEO);  //Initialize Graphics (for OpenGL)
 
@@ -100,61 +98,10 @@ int main(int argc, char *argv[]){
     printf("ERROR: Failed to initialize OpenGL context.\n");
     return -1;
   }
-
-  ifstream modelFile;
-	modelFile.open("models/teapot.txt");
-	int numLines = 0;
-	modelFile >> numLines;
-	float* modelData = new float[numLines];
-	for (int i = 0; i < numLines; i++){
-		modelFile >> modelData[i];
-	}
-	printf("Mode line count: %d\n",numLines);
-	float numTris = numLines/8;
-	
-  //Load the vertex Shader
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER); 
-	glShaderSource(vertexShader, 1, &vertexSource, NULL);
-	glCompileShader(vertexShader);
-	
-	//Let's double check the shader compiled 
-	GLint status;
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &status);
-	if (!status){
-		char buffer[512];
-		glGetShaderInfoLog(vertexShader, 512, NULL, buffer);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                         "Compilation Error",
-                         "Failed to Compile: Check Consol Output.",
-                         NULL);
-		printf("Vertex Shader Compile Failed. Info:\n\n%s\n",buffer);
-	}
-	
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
-	glCompileShader(fragmentShader);
-	
-	//Double check the shader compiled 
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &status);
-	if (!status){
-		char buffer[512];
-		glGetShaderInfoLog(fragmentShader, 512, NULL, buffer);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
-                         "Compilation Error",
-                         "Failed to Compile: Check Consol Output.",
-                         NULL);
-		printf("Fragment Shader Compile Failed. Info:\n\n%s\n",buffer);
-	}
-	
-	//Join the vertex and fragment shaders together into one program
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glBindFragDataLocation(shaderProgram, 0, "outColor"); // set output
-	glLinkProgram(shaderProgram); //run the linker
 	
 	glUseProgram(shaderProgram); //Set the active shader (only one can be used at a time)
 
+    // Compile shaders
 
 	//Build a Vertex Array Object. This stores the VBO and attribute mappings in one object
 	GLuint vao;

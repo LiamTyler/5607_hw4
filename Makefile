@@ -3,7 +3,7 @@ SRCDIR = $(realpath ./src)
 BINDIR = $(BUILDDIR)/bin
 OBJDIR = $(BUILDDIR)/obj
 CXX = g++
-CXXLIBS += -lSDL2 -lGL -ldl
+CXXLIBS += -lGLEW -lSDL2 -lGL -lGLU -ldl
 CXXFLAGS += -I$(SRCDIR) -std=c++11
 
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst *,%,$2),$d))
