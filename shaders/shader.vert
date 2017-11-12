@@ -13,7 +13,7 @@ out vec3 normalInEyeSpace;
 
 void main() {
     vertexInEyeSpace = (view * model * vec4(pos, 1)).xyz;
-    normalInEyeSpace = normalize((transpose(inverse(model)) * vec4(normal, 0.0)).xyz);
+    normalInEyeSpace = normalize((transpose(inverse(view * model)) * vec4(normal, 0.0)).xyz);
 
     gl_Position = proj * view * model * vec4(pos, 1);
 }

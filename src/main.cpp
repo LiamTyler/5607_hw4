@@ -140,7 +140,7 @@ int main(int argc, char *argv[]){
 
         // create the view matrix
         mat4 view = lookAt(
-                vec3(10.f, 20.f, 50.0f),
+                vec3(50.f, 20.f, 50.0f),
                 vec3(0.f, 0.f, 0.f),
                 vec3(0.f, 1.0f, 0.f));
 
@@ -153,9 +153,9 @@ int main(int argc, char *argv[]){
         glUniformMatrix4fv(uniProj, 1, GL_FALSE, &proj[0][0]);
 
         // light
-        vec3 lightDir = vec3(-.5, -1, -.2);
+        vec3 lightDir = vec3(-1.0, 0, 0);
         GLint uniLight = glGetUniformLocation(program, "lightInEyeSpace");
-        vec4 l = vec4(lightDir, 1);
+        vec4 l = view * vec4(lightDir, 0);
         glUniform4f(uniLight, l[0], l[1], l[2], l[3]);
 
         // Actually draw the cube
