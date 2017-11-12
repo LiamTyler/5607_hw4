@@ -25,31 +25,41 @@ enum class GAME_IDS : int {
 };
 
 inline SDL_Window* InitAndWindow(string title, int ox, int oy, int w, int h) {
-    SDL_Init(SDL_INIT_VIDEO);
+    cout << "a" << endl;
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        cout << "Failed to init SDL" << endl;
+        return nullptr;
+    }
 
+    cout << "b" << endl;
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
+    cout << "c" << endl;
     SDL_Window* window = SDL_CreateWindow(title.c_str(), ox, oy, w, h, SDL_WINDOW_OPENGL);
     if (window == NULL) {
         cout << "Failed to create an SDL2 window" << endl;
         exit(1);
     }
+    cout << "d" << endl;
     SDL_GLContext context = SDL_GL_CreateContext(window);
     if (context == NULL) {
         cout << "Failed to create an opengl context" << endl;
         exit(1);
     }
 
+    cout << "e" << endl;
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         cout << "Failed to init GLEW" << endl;
         exit(1);
     }
+    cout << "f" << endl;
     if (SDL_GL_SetSwapInterval(1) < 0)
         cout << "Failed to set vsync" << endl;
 
+    cout << "g" << endl;
     glEnable(GL_DEPTH_TEST);
 
     return window;

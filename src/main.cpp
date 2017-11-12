@@ -18,24 +18,24 @@ static const GLfloat cube_vertices[] = {
     1.0f, 1.0f,-1.0f, // triangle 2 : begin
     -1.0f,-1.0f,-1.0f,
     -1.0f, 1.0f,-1.0f, // triangle 2 : end
-    1.0f,-1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f, // tri 3 b
     -1.0f,-1.0f,-1.0f,
+    1.0f,-1.0f,-1.0f, // tri 3 e
+    1.0f, 1.0f,-1.0f, // tri 4 b
     1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f, // tri 4 e
+    -1.0f,-1.0f,-1.0f, // tri 5 b
     -1.0f, 1.0f, 1.0f,
-    -1.0f, 1.0f,-1.0f,
-    1.0f,-1.0f, 1.0f,
+    -1.0f, 1.0f,-1.0f, // tri 5 e
+    1.0f,-1.0f, 1.0f, // tri 6 b
     -1.0f,-1.0f, 1.0f,
-    -1.0f,-1.0f,-1.0f,
-    -1.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f,-1.0f, // tri 6 e
+    -1.0f, 1.0f, 1.0f, // tri 7 b
     -1.0f,-1.0f, 1.0f,
-    1.0f,-1.0f, 1.0f,
-    1.0f, 1.0f, 1.0f,
+    1.0f,-1.0f, 1.0f, // tri 7 e
+    1.0f, 1.0f, 1.0f, // tri 8 b
     1.0f,-1.0f,-1.0f,
-    1.0f, 1.0f,-1.0f,
+    1.0f, 1.0f,-1.0f, // tri 8 e
     1.0f,-1.0f,-1.0f,
     1.0f, 1.0f, 1.0f,
     1.0f,-1.0f, 1.0f,
@@ -51,7 +51,36 @@ static const GLfloat cube_vertices[] = {
 };
 
 int main(int argc, char *argv[]){
+    float cube_normals[36 * 3];
+    for (int i = 0; i < 12; ++i) {
+        float ax = cube_vertices[9*i + 0];
+        float ay = cube_vertices[9*i + 1];
+        float az = cube_vertices[9*i + 2];
+        float bx = cube_vertices[9*i + 3];
+        float by = cube_vertices[9*i + 4];
+        float bz = cube_vertices[9*i + 5];
+        float cx = cube_vertices[9*i + 6];
+        float cy = cube_vertices[9*i + 7];
+        float cz = cube_vertices[9*i + 8];
+        vec3 AB(bx - ax, by - ay, bz - az);
+        vec3 AC(cx - ax, cy - ay, cz - az);
+        vec3 n = normalize(cross(AB, AC));
+        for (int j = 0; j < 3; j++) {
+            cube_normals[9*i + 3*j + 0] = n.x;
+            cube_normals[9*i + 3*j + 1] = n.y;
+            cube_normals[9*i + 3*j + 2] = n.z;
+        }
+    }
+
+    for (int i = 0; i < 36; i++) {
+        cout << cube_normals[3*i + 0] << " ";
+        cout << cube_normals[3*i + 1] << " ";
+        cout << cube_normals[3*i + 2] << " ";
+        cout << endl;
+    }
+
     SDL_Window* window = InitAndWindow("HW4", 100, 100, SW, SH);
+    cout << "window" << endl;
 
     cout << "vendor: " << glGetString(GL_VENDOR) << endl;
     cout << "renderer: " << glGetString(GL_RENDERER) << endl;
@@ -65,12 +94,21 @@ int main(int argc, char *argv[]){
 	glGenVertexArrays(1, &cube_vao);
 	glBindVertexArray(cube_vao);
 
-	GLuint cube_vbo;
-	glGenBuffers(1, &cube_vbo);
-	glBindBuffer(GL_ARRAY_BUFFER, cube_vbo);
+	GLuint cube_verts_vbo;
+	glGenBuffers(1, &cube_verts_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cube_verts_vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+	GLuint cube_normals_vbo;
+	glGenBuffers(1, &cube_normals_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, cube_normals_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_normals), cube_normals, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+
 
     //Event Loop (Loop forever processing each event as fast as possible)
     SDL_Event windowEvent;
@@ -97,12 +135,12 @@ int main(int argc, char *argv[]){
 
         // create the model matrix
         mat4 model(1.0f);
-        model = scale(model, vec3(10, 10, 10));
-        model = translate(model, vec3(0, 0, -5));
+        model = scale(model, vec3(5, 5, 5));
+        // model = translate(model, vec3(0, 0, -5));
 
         // create the view matrix
         mat4 view = lookAt(
-                vec3(0.f, 0.f, 10.0f),
+                vec3(10.f, 20.f, 50.0f),
                 vec3(0.f, 0.f, 0.f),
                 vec3(0.f, 1.0f, 0.f));
 
@@ -113,6 +151,12 @@ int main(int argc, char *argv[]){
         glUniformMatrix4fv(uniModel, 1, GL_FALSE, &model[0][0]);
         glUniformMatrix4fv(uniView, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(uniProj, 1, GL_FALSE, &proj[0][0]);
+
+        // light
+        vec3 lightDir = vec3(-.5, -1, -.2);
+        GLint uniLight = glGetUniformLocation(program, "lightInEyeSpace");
+        vec4 l = vec4(lightDir, 1);
+        glUniform4f(uniLight, l[0], l[1], l[2], l[3]);
 
         // Actually draw the cube
         glBindVertexArray(cube_vao);
