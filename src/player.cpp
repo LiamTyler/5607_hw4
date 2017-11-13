@@ -6,6 +6,6 @@ Player::Player() {
     texture_ = 'P';
 }
 
-Player::Player(ivec2 pos, int health, char t) : GameObject((int) GAME_IDS::PLAYER, pos, false, t) {
+Player::Player(vec3 pos, int health, char t) : GameObject((int) GAME_IDS::PLAYER, pos, false, t) {
     health_ = health;
 }

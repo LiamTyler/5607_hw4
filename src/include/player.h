@@ -10,7 +10,7 @@ using namespace std;
 class Player : public GameObject {
     public:
         Player();
-        Player(ivec2 pos, int health, char texture);
+        Player(vec3 pos, int health, char texture);
 
         int getHealth() { return health_; }
         void Damage(int d) { health_ -= d; }

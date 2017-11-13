@@ -2,13 +2,14 @@
 
 uniform vec4 lightInEyeSpace;
 
-const vec4 Ia = vec4(0.3, 0.3, 0.3, 1);
-const vec4 Id = vec4(0.7, 0.7, 0.7, 1);
-const vec4 Is = vec4(1.0, 1.0, 1.0, 1);
+uniform vec3 Ia;
+uniform vec3 Id;
+uniform vec3 Is;
 
-const vec4 ka = vec4(.4, .4, .4, 1);
-const vec4 kd = vec4(1.0, 0.0, 0.0, 1);
-const vec4 ks = vec4(.6, .6, .6, 1);
+uniform vec3 ka;
+uniform vec3 kd;
+uniform vec3 ks;
+
 const float s = 50;
 
 out vec4 color;
@@ -24,8 +25,8 @@ void main() {
     float diffuse = max(dot(l, n), 0.0);
 
     vec3 finalColor = vec3(0.0, 0.0, 0.0);
-    finalColor += (ka.xyz)*(Ia.xyz);
-    finalColor += (kd.xyz)*(Id.xyz) * diffuse;
+    finalColor += ka*Ia;
+    finalColor += kd*Id * diffuse;
 
     color.rgb = finalColor;
     color.a = 1.0;

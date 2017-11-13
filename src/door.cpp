@@ -7,7 +7,7 @@ Door::Door() {
     texture_ = 'A' + door_id_;
 }
 
-Door::Door(ivec2 pos, int dID, bool open, char t) : GameObject((int) GAME_IDS::DOOR, pos, false, t) {
+Door::Door(vec3 pos, int dID, bool open, char t) : GameObject((int) GAME_IDS::DOOR, pos, false, t) {
     open_ = open;
     door_id_ = dID;
 }

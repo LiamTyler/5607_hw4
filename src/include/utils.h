@@ -24,6 +24,29 @@ enum class GAME_IDS : int {
     KEY,
 };
 
+inline void CreateNormals(float normals[], float verts[], int num_verts) {
+    float cube_normals[36 * 3];
+    for (int i = 0; i < num_verts*3; i += 9) {
+        float ax = verts[i + 0];
+        float ay = verts[i + 1];
+        float az = verts[i + 2];
+        float bx = verts[i + 3];
+        float by = verts[i + 4];
+        float bz = verts[i + 5];
+        float cx = verts[i + 6];
+        float cy = verts[i + 7];
+        float cz = verts[i + 8];
+        vec3 AB(bx - ax, by - ay, bz - az);
+        vec3 AC(cx - ax, cy - ay, cz - az);
+        vec3 n = normalize(cross(AB, AC));
+        for (int j = 0; j < 3; j++) {
+            normals[i + 3*j + 0] = n.x;
+            normals[i + 3*j + 1] = n.y;
+            normals[i + 3*j + 2] = n.z;
+        }
+    }
+}
+
 inline SDL_Window* InitAndWindow(string title, int ox, int oy, int w, int h) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         cout << "Failed to init SDL" << endl;

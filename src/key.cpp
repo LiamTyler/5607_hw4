@@ -6,6 +6,6 @@ Key::Key() {
     texture_ = 'a' + door_id_;
 }
 
-Key::Key(ivec2 pos, int door_id, char t) : GameObject((int) GAME_IDS::KEY, pos, true, t) {
+Key::Key(vec3 pos, int door_id, char t) : GameObject((int) GAME_IDS::KEY, pos, true, t) {
     door_id_ = door_id;
 }

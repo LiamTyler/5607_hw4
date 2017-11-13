@@ -8,7 +8,7 @@
 class Wall : public GameObject {
     public:
         Wall();
-        Wall(ivec2, char texture);
+        Wall(vec3 pos, char texture);
 };
 
 #endif  // SRC_INCLUDE_WALL_H_

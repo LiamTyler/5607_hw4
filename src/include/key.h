@@ -8,7 +8,7 @@
 class Key : public GameObject {
     public:
         Key();
-        Key(ivec2 pos, int door_id, char t);
+        Key(vec3 pos, int door_id, char t);
 
         int getDoorID() { return door_id_; }
 

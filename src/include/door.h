@@ -9,7 +9,7 @@
 class Door : public GameObject {
     public:
         Door();
-        Door(ivec2 pos, int door_id, bool open, char t);
+        Door(vec3 pos, int door_id, bool open, char t);
 
         void InsertKey(Key& k);
         bool getOpenStatus() { return open_; }
