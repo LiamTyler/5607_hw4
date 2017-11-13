@@ -19,6 +19,10 @@ class Game {
         bool Parse(string fname);
         void Draw(GLuint program);
         
+        void Update(float dt);
+        void UpdateCameraAngle(float xrel, float yrel);
+        void SetCameraVel(vec3 v) { camera_vel_ = v; }
+        vec3 getCameraVel() { return camera_vel_; }
         void setAspectRatio(float a) { aspect_ = a; }
         int getID(int r, int c);
         int getWidth() { return width_; }
@@ -39,6 +43,13 @@ class Game {
         vec3 start_pos_;
         vec3 end_pos_;
         DirectionalLight* dirLight_;
+        vec4 camera_pos_;
+        vec4 camera_lookAt_;
+        vec4 camera_up_;
+        vec4 camera_rotation_;
+        vec3 camera_vel_;
+        float speed_;
+        mat4 camera_rot_mat_;
 
         GLuint cube_vao_;
         GLuint cube_verts_vbo_;

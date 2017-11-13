@@ -21,8 +21,8 @@ GameObject::GameObject(int id, vec3 p, bool tangible, char texture) {
 mat4 GameObject::getModelMatrix() {
     mat4 model(1.0f);
     model = translate(model, position_);
-    model = rotate(model, rotate_.x, vec3(1, 0, 0));
     model = rotate(model, rotate_.y, vec3(0, 1, 0));
+    model = rotate(model, rotate_.x, vec3(1, 0, 0));
     model = rotate(model, rotate_.z, vec3(0, 0, 1));
     model = scale(model, scale_);
     return model;

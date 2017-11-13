@@ -23,7 +23,31 @@ Game::Game(string fname) {
     end_pos_ = vec3(0,0,0);
     aspect_ = 1;
     scale_ = vec3(10, 10, 10);
+    camera_pos_ = vec4(0.f, 1.0f, 50.0f, 1);
+    camera_lookAt_ = vec4(0,0,-1, 0);
+    camera_up_ = vec4(0, 1, 0, 0);
+    // camera_rotation_ = vec4((float)M_PI/10, (float) -M_PI/10, 0.f, 0);
+    camera_rotation_ = vec4(0.f, 0.f, 0.f, 0.f);
+    camera_rot_mat_ = mat4(1.0f);
+    speed_ = 20;
     Parse(fname);
+}
+
+void Game::Update(float dt) {
+    float y = camera_pos_.y;
+    camera_pos_ += speed_*dt*camera_rot_mat_*vec4(camera_vel_, 0);
+    camera_pos_.y = y;
+}
+
+void Game::UpdateCameraAngle(float xrel, float yrel) {
+    xrel *= -M_PI / 180.0 / 4;
+    yrel *= -M_PI / 180.0 / 4;
+    camera_rotation_ += vec4(yrel, xrel, 0.f, 0.f);
+    mat4 r(1.0f);
+    r = rotate(r, camera_rotation_.y, vec3(0, 1, 0));
+    r = rotate(r, camera_rotation_.x, vec3(1, 0, 0));
+    r = rotate(r, camera_rotation_.z, vec3(0, 0, 1));
+    camera_rot_mat_ = r;
 }
 
 void Game::Init() {
@@ -33,38 +57,38 @@ void Game::Init() {
             vec3(.3, .3, .3),
             vec3(.7, .7, .7),
             vec3(1.0, 1.0, 1.0));
-    
+
     // Walls
-	glGenVertexArrays(1, &cube_vao_);
-	glBindVertexArray(cube_vao_);
+    glGenVertexArrays(1, &cube_vao_);
+    glBindVertexArray(cube_vao_);
 
-	glGenBuffers(1, &cube_verts_vbo_);
-	glBindBuffer(GL_ARRAY_BUFFER, cube_verts_vbo_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glGenBuffers(1, &cube_verts_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, cube_verts_vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glGenBuffers(1, &cube_normals_vbo_);
-	glBindBuffer(GL_ARRAY_BUFFER, cube_normals_vbo_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_normals), cube_normals, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glGenBuffers(1, &cube_normals_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, cube_normals_vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cube_normals), cube_normals, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     // Floor
-	glGenVertexArrays(1, &floor_vao_);
-	glBindVertexArray(floor_vao_);
+    glGenVertexArrays(1, &floor_vao_);
+    glBindVertexArray(floor_vao_);
 
-	glGenBuffers(1, &floor_verts_vbo_);
-	glBindBuffer(GL_ARRAY_BUFFER, floor_verts_vbo_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(floor_vertices), floor_vertices, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glGenBuffers(1, &floor_verts_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, floor_verts_vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(floor_vertices), floor_vertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	glGenBuffers(1, &floor_normals_vbo_);
-	glBindBuffer(GL_ARRAY_BUFFER, floor_normals_vbo_);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(floor_normals), floor_normals, GL_STATIC_DRAW);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glGenBuffers(1, &floor_normals_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, floor_normals_vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(floor_normals), floor_normals, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 }
 
 Game::~Game() {
@@ -97,10 +121,11 @@ void Game::Draw(GLuint program) {
 
     GLint uniView  = glGetUniformLocation(program, "view");
     GLint uniProj  = glGetUniformLocation(program, "proj");
+
     mat4 view = lookAt(
-            vec3(0.f, 1.0f, 50.0f),
-            vec3(0.f, 0.0f, 0.f),
-            vec3(0.f, 1.0f, 0.f));
+            vec3(camera_pos_),
+            vec3(camera_pos_ + camera_rot_mat_*camera_lookAt_),
+            vec3(camera_rot_mat_*camera_up_));
 
     mat4 proj = perspective(radians(45.0f), aspect_, .1f, 100.0f);
     glUniformMatrix4fv(uniView, 1, GL_FALSE, &view[0][0]);
