@@ -2,7 +2,6 @@
 #define SRC_INCLUDE_UTILS_H_
 
 #include <GL/glew.h>
-#include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <glm/glm.hpp>
@@ -15,6 +14,11 @@
 
 using namespace glm;
 using namespace std;
+
+inline ostream& operator <<(ostream& out, const vec3& v) {
+    out << v.x << " " << v.y << " " << v.z;
+    return out;
+}
 
 enum class GAME_IDS : int {
     EMPTY = 0,
@@ -45,6 +49,25 @@ inline void CreateNormals(float normals[], float verts[], int num_verts) {
             normals[i + 3*j + 2] = n.z;
         }
     }
+}
+
+inline GLuint LoadTexture(string path) {
+    SDL_Surface* s = SDL_LoadBMP(path.c_str());
+    if (s == NULL) {
+        cerr << "cold not load texture: " << path << endl;
+        return -1;
+    }
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, s->w, s->h, 0, GL_BGR, GL_UNSIGNED_BYTE, s->pixels);
+    SDL_FreeSurface(s);
+
+    return tex;
 }
 
 inline SDL_Window* InitAndWindow(string title, int ox, int oy, int w, int h) {

@@ -1,9 +1,10 @@
 #ifndef SRC_INCLUDE_LIGHTS_H_
 #define SRC_INCLUDE_LIGHTS_H_
 
-class DirectionalLight {
+class Light {
     public:
-        DirectionalLight(vec3 dir, vec3 a, vec3 d, vec3 s) :
+        Light() {}
+        Light(vec3 dir, vec3 a, vec3 d, vec3 s) :
             dir_(dir), Ia_(a), Id_(d), Is_(s) {}
         void Send(GLuint prgm) {
             GLint loc;

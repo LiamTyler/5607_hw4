@@ -15,7 +15,7 @@ class Game {
         Game();
         Game(string fname);
         ~Game();
-        void Init();
+        void Init(GLuint program);
         bool Parse(string fname);
         void Draw(GLuint program);
         
@@ -42,7 +42,9 @@ class Game {
         GameObject** map_;
         vec3 start_pos_;
         vec3 end_pos_;
-        DirectionalLight* dirLight_;
+        Light* dirLight_;
+        Light* point_lights_;
+        int num_point_lights_;
         vec4 camera_pos_;
         vec4 camera_lookAt_;
         vec4 camera_up_;
@@ -50,10 +52,15 @@ class Game {
         vec3 camera_vel_;
         float speed_;
         mat4 camera_rot_mat_;
+        GameObject* floor_;
+        bool fading_;
+        float fade_;
 
+        GLuint wall_texture_;
         GLuint cube_vao_;
         GLuint cube_verts_vbo_;
         GLuint cube_normals_vbo_;
+        GLuint cube_uv_vbo_;
         GLuint floor_vao_;
         GLuint floor_verts_vbo_;
         GLuint floor_normals_vbo_;

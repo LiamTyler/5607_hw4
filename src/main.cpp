@@ -12,21 +12,6 @@ bool fullscreen = false;
 int SW = 800;
 int SH = 600;
 
-ostream& operator<<(ostream& out, const mat4& m) {
-    for (int r = 0; r < 4; r++) {
-        for (int c = 0; c < 4; c++) {
-            out << m[r][c] << " ";
-        }
-        out << endl;
-    }
-}
-
-ostream& operator<<(ostream& out, const vec4& m) {
-    for (int r = 0; r < 4; r++)
-        out << m[r] << " ";
-    out << endl;
-}
-
 int main(int argc, char *argv[]){
     SDL_Window* window = InitAndWindow("HW4", 100, 100, SW, SH);
     cout << "window" << endl;
@@ -40,7 +25,7 @@ int main(int argc, char *argv[]){
 
     Game* game = new Game(MAP);
     game->setAspectRatio((float) SW / SH);
-    game->Init();
+    game->Init(program);
 
     SDL_SetRelativeMouseMode(SDL_TRUE);
     unsigned int currTime;
