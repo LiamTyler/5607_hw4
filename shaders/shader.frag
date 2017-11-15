@@ -72,10 +72,10 @@ void main() {
         float diffuse = max(dot(l, n), 0.0);
         float specular = pow(max(dot(n, h), 0.0), s);
 
-        float F = 1.0 / pow(length(vertexInEyeSpace - light), 2);
+        float F = 2.5 / pow(length(vertexInEyeSpace - light), 2);
         if (textured) {
             tmpColor += ka*lIa;
-            tmpColor += kd*lId * diffuse * vec3(texture(tex, texCoord));
+            tmpColor += kd*lId * diffuse * vec3(texture(tex, vec2(texCoord.x, 1-texCoord.y)));
             tmpColor += ks*lIs * specular;
         } else {
             tmpColor += ka*lIa;

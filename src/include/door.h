@@ -13,6 +13,7 @@ class Door : public GameObject {
 
         void InsertKey(Key& k);
         bool getOpenStatus() { return open_; }
+        int getDoorID() { return door_id_; }
 
     protected:
         bool open_;

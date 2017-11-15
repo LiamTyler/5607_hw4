@@ -7,6 +7,7 @@
 #include "include/game_object.h"
 #include "include/player.h"
 #include "include/lights.h"
+#include "include/door.h"
 
 using namespace std;
 
@@ -57,6 +58,8 @@ class Game {
         float fade_;
         float hit_width_;
 
+        vector<Door*> doors_;
+        vector<GLuint> door_textures_;
         GLuint wall_texture_;
         GLuint cube_vao_;
         GLuint cube_verts_vbo_;

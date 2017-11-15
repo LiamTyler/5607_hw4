@@ -19,7 +19,7 @@ Game::Game(string fname) {
     aspect_ = 1;
     scale_ = 20*vec3(1, 1, 1);
     speed_ = 20;
-    hit_width_ = 3;
+    hit_width_ = 2;
 
     // camera
     camera_pos_ = vec4(0.f, 100.0f, 50.0f, 1);
@@ -70,9 +70,11 @@ void Game::Update(float dt) {
             if (o) {
                 vec3 p = o->getPosition();
                 vec3 s = o->getScale();
-                float d = length(vec3(np) - p);
-                if (d < hit_width_ + s.x || d < hit_width_ + s.z)
+                float dx = abs(np.x - p.x);
+                float dz = abs(np.z - p.z);
+                if (dx < hit_width_ + s.x && dz < hit_width_ + s.z) {
                     hit = true;
+                }
             }
         }
     }
@@ -170,6 +172,11 @@ void Game::Init(GLuint program) {
     // Textures
     glActiveTexture(GL_TEXTURE0);
     wall_texture_ = LoadTexture("textures/wall.bmp");
+    door_textures_.push_back(LoadTexture("textures/door_A.bmp"));
+    door_textures_.push_back(LoadTexture("textures/door_B.bmp"));
+    door_textures_.push_back(LoadTexture("textures/door_C.bmp"));
+    door_textures_.push_back(LoadTexture("textures/door_D.bmp"));
+    door_textures_.push_back(LoadTexture("textures/door_E.bmp"));
 }
 
 int Game::getID(int r, int c) {
@@ -191,7 +198,7 @@ void Game::Draw(GLuint program) {
             vec3(camera_pos_ + camera_rot_mat_*camera_lookAt_),
             vec3(camera_rot_mat_*camera_up_));
 
-    mat4 proj = perspective(radians(45.0f), aspect_, .1f, 200.0f);
+    mat4 proj = perspective(radians(45.0f), aspect_, .1f, 400.0f);
     glUniformMatrix4fv(uniView, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(uniProj, 1, GL_FALSE, &proj[0][0]);
 
@@ -223,6 +230,17 @@ void Game::Draw(GLuint program) {
         }
     }
 
+
+    for (int i = 0; i < doors_.size(); i++) {
+        Door* d = doors_[i];
+        d->SendModel(program);
+        d->SendMaterial(program);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, door_textures_[d->getDoorID()]);
+        glUniform1i(glGetUniformLocation(program, "tex"), 0);
+        glDrawArrays(GL_TRIANGLES, 0, 12*3);
+    }
+
     glBindVertexArray(floor_vao_);
     glUniform1f(textured, false);
     floor_->SendModel(program);
@@ -249,10 +267,9 @@ bool Game::Parse(string fname) {
     height_ += 2;
     map_ = new GameObject*[width_*height_];
     vec3 wa = vec3(.4, .4, .4);
-    // vec3 wd = vec3(1, 0, 0);
     vec3 wd = vec3(1, 1, 1);
     vec3 ws = vec3(1, 1, 1);
-    vec3 la = 2*vec3(.3, .3, .3);
+    vec3 la = 5*vec3(.3, .3, .3);
     vec3 ld = 100*vec3(.7, .7, .7);
     vec3 ls(0.8, 0.8, 0.8);
     for (int r = 0; r < height_; r++) {
@@ -291,8 +308,14 @@ bool Game::Parse(string fname) {
                     case 'C':
                     case 'D':
                     case 'E':
-                        //tmp = new Door(p, o - 'A', false, o);
+                        {
+                        Door* d = new Door(p, o - 'A', false, o);
+                        d->setScale(.5*scale_);
+                        d->setMaterial(wa, wd, ws);
+                        doors_.push_back(d);
+                        tmp = d;
                         break;
+                        }
                     case 'a':
                     case 'b':
                     case 'c':
