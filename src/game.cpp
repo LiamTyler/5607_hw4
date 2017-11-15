@@ -11,33 +11,39 @@
 
 using namespace std;
 
-Game::Game() {
-    map_ = nullptr;
-    start_pos_ = vec3(0,0,0);
-    end_pos_ = vec3(0,0,0);
-    aspect_ = 1;
-    scale_ = 20*vec3(1, 1, 1);
-}
-
 Game::Game(string fname) {
+    // map variables
     map_ = nullptr;
     start_pos_ = vec3(0,0,0);
     end_pos_ = vec3(0,0,0);
     aspect_ = 1;
     scale_ = 20*vec3(1, 1, 1);
+    speed_ = 20;
+
+    // camera
     camera_pos_ = vec4(0.f, 100.0f, 50.0f, 1);
     camera_lookAt_ = vec4(0,0,-1, 0);
     camera_up_ = vec4(0, 1, 0, 0);
     camera_rotation_ = vec4(0.f, 0.f, 0.f, 0.f);
     camera_rot_mat_ = mat4(1.0f);
-    speed_ = 20;
+
+    // Floor and ceiling
     floor_ = new GameObject();
     floor_->setMaterial(vec3(.4, .4, .4), vec3(.5,.5,.5), vec3(.1,.1,.1));
     floor_->setScale(vec3(500, 1, 500));
+    ceiling_ = new GameObject();
+    ceiling_->setMaterial(vec3(.4, .4, .4), vec3(.7,.7,.7), vec3(.1,.1,.1));
+    ceiling_->setScale(vec3(500, 1, 500));
+    ceiling_->setPosition(vec3(0,scale_.y, 0));
+
+    // ending fade
     fading_ = false;
     fade_ = 0;
+
+    // Lights
     num_point_lights_ = 0;
     point_lights_ = new Light[MAX_LIGHTS];
+
     Parse(fname);
 }
 
@@ -140,6 +146,23 @@ void Game::Init(GLuint program) {
     glEnableVertexAttribArray(normalAttrib);
     glVertexAttribPointer(normalAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+    // Ceiling
+    glGenVertexArrays(1, &ceiling_vao_);
+    glBindVertexArray(ceiling_vao_);
+
+    glGenBuffers(1, &ceiling_verts_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, ceiling_verts_vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(ceiling_vertices), ceiling_vertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(posAttrib);
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glGenBuffers(1, &ceiling_normals_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, ceiling_normals_vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(ceiling_normals), ceiling_normals, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(normalAttrib);
+    glVertexAttribPointer(normalAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // Textures
     glActiveTexture(GL_TEXTURE0);
     wall_texture_ = LoadTexture("textures/wall.bmp");
 }
@@ -185,8 +208,6 @@ void Game::Draw(GLuint program) {
     glBindVertexArray(cube_vao_);
     for (int r = 0; r < height_; r++) {
         for (int c = 0; c < width_; c++) {
-    // for (int r = 0; r < 1; r++) {
-    //     for (int c = 0; c < 1; c++) {
             GameObject* o = map_[r*width_ + c];
             int id = getID(r, c);
             if (id == (int)GAME_IDS::WALL) {
@@ -201,6 +222,12 @@ void Game::Draw(GLuint program) {
     glUniform1f(textured, false);
     floor_->SendModel(program);
     floor_->SendMaterial(program);
+    glDrawArrays(GL_TRIANGLES, 0, 2*3);
+
+    glBindVertexArray(ceiling_vao_);
+    glUniform1f(textured, false);
+    ceiling_->SendModel(program);
+    ceiling_->SendMaterial(program);
     glDrawArrays(GL_TRIANGLES, 0, 2*3);
 }
 
@@ -220,9 +247,9 @@ bool Game::Parse(string fname) {
     // vec3 wd = vec3(1, 0, 0);
     vec3 wd = vec3(1, 1, 1);
     vec3 ws = vec3(1, 1, 1);
-    vec3 la(.3, .3, .3);
-    vec3 ld = 130*vec3(.7, .7, .7);
-    vec3 ls(1.0, 1.0, 1.0);
+    vec3 la = 2*vec3(.3, .3, .3);
+    vec3 ld = 100*vec3(.7, .7, .7);
+    vec3 ls(0.8, 0.8, 0.8);
     for (int r = 0; r < height_; r++) {
         for (int c = 0; c < width_; c++) {
             vec3 p = vec3(c*scale_.x, scale_.y / 2, r*scale_.z);

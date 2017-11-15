@@ -12,7 +12,6 @@ using namespace std;
 
 class Game {
     public:
-        Game();
         Game(string fname);
         ~Game();
         void Init(GLuint program);
@@ -53,6 +52,7 @@ class Game {
         float speed_;
         mat4 camera_rot_mat_;
         GameObject* floor_;
+        GameObject* ceiling_;
         bool fading_;
         float fade_;
 
@@ -64,6 +64,9 @@ class Game {
         GLuint floor_vao_;
         GLuint floor_verts_vbo_;
         GLuint floor_normals_vbo_;
+        GLuint ceiling_vao_;
+        GLuint ceiling_verts_vbo_;
+        GLuint ceiling_normals_vbo_;
 };
 
 #endif  // SRC_INCLUDE_GAME_H_
