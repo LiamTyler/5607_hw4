@@ -15,9 +15,13 @@ class Player : public GameObject {
         int getHealth() { return health_; }
         void Damage(int d) { health_ -= d; }
         bool Alive() { return health_ > 0; }
+        float getRadius() { return radius_; }
+        float getHeight() { return height_; }
 
     protected:
         int health_;
+        float radius_;
+        float height_;
 };
 
 #endif  // SRC_INCLUDE_PLAYER_H_

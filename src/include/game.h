@@ -55,6 +55,7 @@ class Game {
         GameObject* ceiling_;
         bool fading_;
         float fade_;
+        float hit_width_;
 
         GLuint wall_texture_;
         GLuint cube_vao_;

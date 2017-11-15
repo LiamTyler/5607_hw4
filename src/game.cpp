@@ -19,6 +19,7 @@ Game::Game(string fname) {
     aspect_ = 1;
     scale_ = 20*vec3(1, 1, 1);
     speed_ = 20;
+    hit_width_ = 3;
 
     // camera
     camera_pos_ = vec4(0.f, 100.0f, 50.0f, 1);
@@ -59,13 +60,30 @@ Game::~Game() {
 
 void Game::Update(float dt) {
     float y = camera_pos_.y;
-    camera_pos_ += 5*speed_*dt*camera_rot_mat_*vec4(camera_vel_, 0);
-    // camera_pos_.y = y;
-    if (length(vec3(camera_pos_) - end_pos_) <= 10) {
-        fading_ = true;
+    vec4 npp = camera_pos_ + 5*speed_*dt*camera_rot_mat_*vec4(camera_vel_, 0);
+    vec3 np = vec3(npp);
+    // new_pos.y = y;
+    bool hit = false;
+    for (int r = 0; r < height_ && !hit; r++) {
+        for (int c = 0; c < width_ && !hit; c++) {
+            GameObject* o = map_[r*width_ + c];
+            if (o) {
+                vec3 p = o->getPosition();
+                vec3 s = o->getScale();
+                float d = length(vec3(np) - p);
+                if (d < hit_width_ + s.x || d < hit_width_ + s.z)
+                    hit = true;
+            }
+        }
     }
-    if (fading_)
-        fade_ += dt;
+    if (!hit)
+        camera_pos_ = npp;
+
+    // if (length(vec3(camera_pos_) - end_pos_) <= 10) {
+    //     fading_ = true;
+    // }
+    // if (fading_)
+    //     fade_ += dt;
 }
 
 void Game::UpdateCameraAngle(float xrel, float yrel) {
@@ -87,19 +105,6 @@ void Game::Init(GLuint program) {
             vec3(.7, .7, .7),
             vec3(1.0, 1.0, 1.0));
 
-    // vec3 arr[4*num_point_lights_];
-    // for (int i = 0; i < num_point_lights_; ++i) {
-    //     arr[4*i + 0] = point_lights_[i].Dir();
-    //     arr[4*i + 1] = point_lights_[i].Ia();
-    //     arr[4*i + 2] = point_lights_[i].Id();
-    //     arr[4*i + 3] = point_lights_[i].Is();
-    // }
-    // for (int i = 0; i < num_point_lights_; ++i) {
-    //     cout << arr[4*i] << endl;
-    // }
-    // vec3 arr[4] = {vec3(15, 5, 90), vec3(.3, .3, .3), 100*vec3(1,1,1), vec3(1,1,1)};
-    // glUniform3fv(glGetUniformLocation(program, "lights"), 4*num_point_lights_, (GLfloat*)&arr[0]);
-    
     glUniform3fv(glGetUniformLocation(program, "lights"), 4*num_point_lights_, (GLfloat*)point_lights_);
 
     // num_point_lights_ = 1;

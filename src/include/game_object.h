@@ -22,7 +22,8 @@ class GameObject {
         void setRotate(vec3 r) { rotate_ = r; }
         int getID() { return id_; }
         bool getTangible() { return tangible_; }
-        ivec2 getPosition() { return position_; }
+        vec3 getPosition() { return position_; }
+        vec3 getScale() { return scale_; }
         char getTexture() { return texture_; }
         void setID(int id) { id_ = id; }
         void setTangible(bool t) { tangible_ = t; }
