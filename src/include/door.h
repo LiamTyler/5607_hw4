@@ -11,12 +11,14 @@ class Door : public GameObject {
         Door();
         Door(vec3 pos, int door_id, bool open, char t);
 
-        void InsertKey(Key& k);
+        void Open();
+        bool Update(float dt);
         bool getOpenStatus() { return open_; }
         int getDoorID() { return door_id_; }
 
     protected:
         bool open_;
+        float open_time_;
         int door_id_;
 };
 

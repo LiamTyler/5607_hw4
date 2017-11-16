@@ -91,6 +91,21 @@ void Game::Update(float dt) {
         grabbed_key_->setRotate(vec3(camera_rotation_));
         grabbed_key_->setPosition(p);
     }
+    for (int i = 0; i < doors_.size(); i++) {
+        if (doors_[i]->Update(dt)) {
+            // erase door
+            for (int r = 0; r < height_; r++) {
+                for (int c = 0; c < width_; c++) {
+                    if (map_[r*width_ + c] == doors_[i]) {
+                        map_[r*width_ + c] = nullptr;
+                    }
+                }
+            }
+            delete doors_[i];
+            doors_.erase(doors_.begin() + i);
+            i--;
+        }
+    }
 
     // if (length(vec3(camera_pos_) - end_pos_) <= 10) {
     //     fading_ = true;
@@ -144,21 +159,12 @@ void Game::InteractKey() {
             if (l < grab_radius_ + ks.x + ds.x &&
                 l < grab_radius_ + ks.z + ds.z) {
                 if (grabbed_key_->getDoorID() == d->getDoorID()) {
+                    d->Open();
                     open_door = i;
                 }
             }
         }
         if (open_door != -1) {
-            // erase door
-            for (int r = 0; r < height_; r++) {
-                for (int c = 0; c < width_; c++) {
-                    if (map_[r*width_ + c] == doors_[open_door]) {
-                        map_[r*width_ + c] = nullptr;
-                    }
-                }
-            }
-            delete doors_[open_door];
-            doors_.erase(doors_.begin() + open_door);
             // erase key
             int gk;
             for (int i = 0; i < keys_.size(); ++i) {
