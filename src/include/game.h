@@ -8,6 +8,7 @@
 #include "include/player.h"
 #include "include/lights.h"
 #include "include/door.h"
+#include "include/key.h"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ class Game {
         
         void Update(float dt);
         void UpdateCameraAngle(float xrel, float yrel);
+        void InteractKey();
         void SetCameraVel(vec3 v) { camera_vel_ = v; }
         vec3 getCameraVel() { return camera_vel_; }
         void setAspectRatio(float a) { aspect_ = a; }
@@ -57,8 +59,11 @@ class Game {
         bool fading_;
         float fade_;
         float hit_width_;
+        float grab_radius_;
+        Key* grabbed_key_;
 
         vector<Door*> doors_;
+        vector<Key*> keys_;
         vector<GLuint> door_textures_;
         GLuint wall_texture_;
         GLuint cube_vao_;

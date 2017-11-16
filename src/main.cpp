@@ -57,6 +57,8 @@ int main(int argc, char *argv[]){
                     game->SetCameraVel(vec3(0, vel.y, vel.z));
                 else if (event.key.keysym.sym == SDLK_w || event.key.keysym.sym == SDLK_s)
                     game->SetCameraVel(vec3(vel.x, vel.y, 0));
+                else if (event.key.keysym.sym == SDLK_e)
+                    game->InteractKey();
             }
             else if (event.type == SDL_MOUSEMOTION) {
                 // cout << event.motion.xrel << endl;

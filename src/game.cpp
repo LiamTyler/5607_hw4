@@ -18,8 +18,9 @@ Game::Game(string fname) {
     end_pos_ = vec3(0,0,0);
     aspect_ = 1;
     scale_ = 20*vec3(1, 1, 1);
-    speed_ = 20;
+    speed_ = 10;
     hit_width_ = 2;
+    grab_radius_ = 4;
 
     // camera
     camera_pos_ = vec4(0.f, 100.0f, 50.0f, 1);
@@ -40,6 +41,7 @@ Game::Game(string fname) {
     // ending fade
     fading_ = false;
     fade_ = 0;
+    grabbed_key_ = nullptr;
 
     // Lights
     num_point_lights_ = 0;
@@ -61,18 +63,21 @@ Game::~Game() {
 void Game::Update(float dt) {
     float y = camera_pos_.y;
     vec4 npp = camera_pos_ + 5*speed_*dt*camera_rot_mat_*vec4(camera_vel_, 0);
+    npp.y = y;
     vec3 np = vec3(npp);
-    // new_pos.y = y;
     bool hit = false;
     for (int r = 0; r < height_ && !hit; r++) {
         for (int c = 0; c < width_ && !hit; c++) {
             GameObject* o = map_[r*width_ + c];
-            if (o) {
+            if (o && o != grabbed_key_) {
                 vec3 p = o->getPosition();
                 vec3 s = o->getScale();
+                float e = 0;
+                if (grabbed_key_) 
+                    e = 2*grab_radius_;
                 float dx = abs(np.x - p.x);
                 float dz = abs(np.z - p.z);
-                if (dx < hit_width_ + s.x && dz < hit_width_ + s.z) {
+                if (dx < hit_width_ + s.x + e && dz < hit_width_ + s.z + e) {
                     hit = true;
                 }
             }
@@ -80,6 +85,12 @@ void Game::Update(float dt) {
     }
     if (!hit)
         camera_pos_ = npp;
+
+    if (grabbed_key_) {
+        vec3 p = vec3(camera_pos_ + 2*grab_radius_*camera_rot_mat_*camera_lookAt_) - vec3(0, 1, 0);
+        grabbed_key_->setRotate(vec3(camera_rotation_));
+        grabbed_key_->setPosition(p);
+    }
 
     // if (length(vec3(camera_pos_) - end_pos_) <= 10) {
     //     fading_ = true;
@@ -97,6 +108,68 @@ void Game::UpdateCameraAngle(float xrel, float yrel) {
     r = rotate(r, camera_rotation_.x, vec3(1, 0, 0));
     r = rotate(r, camera_rotation_.z, vec3(0, 0, 1));
     camera_rot_mat_ = r;
+}
+
+void Game::InteractKey() {
+    if (grabbed_key_ == nullptr) {
+        bool hit = false;
+        for (int i = 0; i < keys_.size(); i++) {
+            vec3 p = keys_[i]->getPosition();
+            vec3 s = keys_[i]->getScale();
+            float dx = abs(camera_pos_.x - p.x);
+            float dz = abs(camera_pos_.z - p.z);
+            if (dx < grab_radius_ + s.x && dz < grab_radius_ + s.z) {
+                grabbed_key_ = keys_[i];
+                hit = true;
+            }
+        }
+        if (hit) {
+            for (int r = 0; r < height_; r++) {
+                for (int c = 0; c < width_; c++) {
+                    if (map_[r*width_ + c] == grabbed_key_) {
+                        map_[r*width_ + c] = nullptr;
+                    }
+                }
+            }
+        }
+    } else {
+        int open_door = -1;
+        for (int i = 0; i < doors_.size(); i++) {
+            Door* d = doors_[i];
+            vec3 dp = d->getPosition();
+            vec3 ds = d->getScale();
+            vec3 kp = grabbed_key_->getPosition();
+            vec3 ks = grabbed_key_->getScale();
+            float l = length(dp - kp);
+            if (l < grab_radius_ + ks.x + ds.x &&
+                l < grab_radius_ + ks.z + ds.z) {
+                if (grabbed_key_->getDoorID() == d->getDoorID()) {
+                    open_door = i;
+                }
+            }
+        }
+        if (open_door != -1) {
+            // erase door
+            for (int r = 0; r < height_; r++) {
+                for (int c = 0; c < width_; c++) {
+                    if (map_[r*width_ + c] == doors_[open_door]) {
+                        map_[r*width_ + c] = nullptr;
+                    }
+                }
+            }
+            delete doors_[open_door];
+            doors_.erase(doors_.begin() + open_door);
+            // erase key
+            int gk;
+            for (int i = 0; i < keys_.size(); ++i) {
+                if (grabbed_key_ == keys_[i])
+                    gk = i;
+            }
+            keys_.erase(keys_.begin() + gk);
+            delete grabbed_key_;
+            grabbed_key_ = nullptr;
+        }
+    }
 }
 
 void Game::Init(GLuint program) {
@@ -229,7 +302,16 @@ void Game::Draw(GLuint program) {
             }
         }
     }
+    textured = glGetUniformLocation(program, "textured");
+    glUniform1f(textured, false);
+    for (int i = 0; i < keys_.size(); i++) {
+        keys_[i]->SendModel(program);
+        keys_[i]->SendMaterial(program);
+        glDrawArrays(GL_TRIANGLES, 0, 12*3);
+    }
 
+    textured = glGetUniformLocation(program, "textured");
+    glUniform1f(textured, true);
 
     for (int i = 0; i < doors_.size(); i++) {
         Door* d = doors_[i];
@@ -321,8 +403,28 @@ bool Game::Parse(string fname) {
                     case 'c':
                     case 'd':
                     case 'e':
-                        // tmp = new Key(p, o - 'A', o);
+                    {
+                        Key *k= new Key(p, o - 'a', o);
+                        int id = o - 'a';
+                        vec3 ka = vec3(.3, .3, .3);
+                        vec3 kd;
+                        vec3 ks = vec3(1, 1, 1);
+                        if (id == 0)
+                            kd = vec3(0, 1, 1);
+                        else if (id == 1)
+                            kd = vec3(1, 0, 1);
+                        else if (id == 2)
+                            kd = vec3(1, 0, 0);
+                        else if (id == 3)
+                            kd = vec3(0, 1, 0);
+                        else if (id == 4)
+                            kd = vec3(1, 1, 0);
+                        k->setScale(vec3(1, 1, 1));
+                        k->setMaterial(ka, kd, ks);
+                        keys_.push_back(k);
+                        tmp = k;
                         break;
+                    }
                     default:
                         break;
                 }

@@ -26,39 +26,12 @@ in vec2 texCoord;
 in vec3 vertexInEyeSpace;
 in vec3 normalInEyeSpace;
 
-/*
-const vec3 lp = vec3(15, 1, 20);
-const vec3 la = vec3(.3, .3, .3);
-const vec3 ld = 10*vec3(10, 10, 10);
-const vec3 ls = vec3(1, 1, 1);
-*/
-
 void main() {
     // float f = fade / 2;
     vec3 n = normalize(normalInEyeSpace);
     vec3 e = normalize(-vertexInEyeSpace);
     vec3 finalColor = vec3(0.0, 0.0, 0.0);
 
-    /*
-    vec3 light = vec3(view*vec4(lp, 1));
-
-    vec3 l = normalize(light - vertexInEyeSpace);
-    vec3 h = normalize(l + e);
-    float diffuse = max(dot(l, n), 0.0);
-    float specular = pow(max(dot(n, h), 0.0), s);
-
-    float F = 1.0 / length(vertexInEyeSpace - light);
-    if (textured) {
-        finalColor += ka*la;
-        finalColor += kd*ld * diffuse * vec3(texture(tex, texCoord));
-        finalColor += ks*ls * specular;
-    } else {
-        finalColor += ka*la;
-        finalColor += kd*ld * diffuse;
-        finalColor += ks*ls * specular;
-    }
-    finalColor *= F;
-    */
     for (int i = 0; i < num_lights; i++) {
         vec3 tmpColor = vec3(0,0,0);
         vec3 pl = lights[4*i + 0];
@@ -72,13 +45,13 @@ void main() {
         float diffuse = max(dot(l, n), 0.0);
         float specular = pow(max(dot(n, h), 0.0), s);
 
-        float F = 2.5 / pow(length(vertexInEyeSpace - light), 2);
+        float F = .2 / pow(length(vertexInEyeSpace - light), 1.2);
         if (textured) {
-            tmpColor += ka*lIa;
+            tmpColor += 3*ka*lIa;
             tmpColor += kd*lId * diffuse * vec3(texture(tex, vec2(texCoord.x, 1-texCoord.y)));
             tmpColor += ks*lIs * specular;
         } else {
-            tmpColor += ka*lIa;
+            tmpColor += 5*ka*lIa;
             tmpColor += kd*lId * diffuse;
             tmpColor += ks*lIs * specular;
         }
