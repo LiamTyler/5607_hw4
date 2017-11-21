@@ -14,6 +14,7 @@ int SH = 600;
 
 int main(int argc, char *argv[]){
     SDL_Window* window = InitAndWindow("HW4", 100, 100, SW, SH);
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "4");
     cout << "window" << endl;
 
     cout << "vendor: " << glGetString(GL_VENDOR) << endl;

@@ -14,7 +14,7 @@ class GameObject {
 
         virtual void SendModel(GLuint prgm);
         void SendMaterial(GLuint prgm);
-        mat4 getModelMatrix();
+        virtual mat4 getModelMatrix();
 
         void setMaterial(vec3 a, vec3 d, vec3 s) { ka_ = a; kd_ = d; ks_ = s; }
         void setPosition(vec3 p) { position_ = p; }

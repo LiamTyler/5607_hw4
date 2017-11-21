@@ -76,6 +76,11 @@ class Game {
         GLuint ceiling_vao_;
         GLuint ceiling_verts_vbo_;
         GLuint ceiling_normals_vbo_;
+        GLuint obj_vao_;
+        GLuint obj_verts_vbo_;
+        GLuint obj_normals_vbo_;
+        GLuint obj_ibo_;
+        int obj_tris_;
 };
 
 #endif  // SRC_INCLUDE_GAME_H_

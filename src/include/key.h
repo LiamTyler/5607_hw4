@@ -10,6 +10,7 @@ class Key : public GameObject {
         Key();
         Key(vec3 pos, int door_id, char t);
 
+        virtual mat4 getModelMatrix();
         int getDoorID() { return door_id_; }
 
     protected:

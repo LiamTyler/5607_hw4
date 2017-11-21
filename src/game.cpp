@@ -4,6 +4,7 @@
 #include "include/player.h"
 #include "include/key.h"
 #include "include/shape_vertices.h"
+#include "include/OBJ_Loader.h"
 #include <fstream>
 #include <cstdlib>
 
@@ -33,10 +34,11 @@ Game::Game(string fname) {
     floor_ = new GameObject();
     floor_->setMaterial(vec3(.4, .4, .4), vec3(.5,.5,.5), vec3(.1,.1,.1));
     floor_->setScale(vec3(500, 1, 500));
+    floor_->setPosition(vec3(0,-0.01, 0));
     ceiling_ = new GameObject();
     ceiling_->setMaterial(vec3(.4, .4, .4), vec3(.7,.7,.7), vec3(.1,.1,.1));
     ceiling_->setScale(vec3(500, 1, 500));
-    ceiling_->setPosition(vec3(0,scale_.y, 0));
+    ceiling_->setPosition(vec3(0,scale_.y + 0.01, 0));
 
     // ending fade
     fading_ = false;
@@ -88,7 +90,10 @@ void Game::Update(float dt) {
 
     if (grabbed_key_) {
         vec3 p = vec3(camera_pos_ + 2*grab_radius_*camera_rot_mat_*camera_lookAt_) - vec3(0, 1, 0);
-        grabbed_key_->setRotate(vec3(camera_rotation_));
+        vec3 newR = vec3(camera_rotation_);
+        newR.y += (float)M_PI / 2;
+        mat4 rot(1.0f);
+        grabbed_key_->setRotate(newR);
         grabbed_key_->setPosition(p);
     }
     for (int i = 0; i < doors_.size(); i++) {
@@ -117,7 +122,12 @@ void Game::Update(float dt) {
 void Game::UpdateCameraAngle(float xrel, float yrel) {
     xrel *= -M_PI / 180.0 / 4;
     yrel *= -M_PI / 180.0 / 4;
-    camera_rotation_ += vec4(yrel, xrel, 0.f, 0.f);
+    float p = M_PI / 4;
+    float nx = camera_rotation_.x + yrel;
+    float ny = camera_rotation_.y + xrel;
+    nx = fmax(-p, fmin(p, nx));
+    camera_rotation_ = vec4(nx, ny, camera_rotation_.z, camera_rotation_.w);
+    // camera_rotation_ += vec4(yrel, xrel, 0.f, 0.f);
     mat4 r(1.0f);
     r = rotate(r, camera_rotation_.y, vec3(0, 1, 0));
     r = rotate(r, camera_rotation_.x, vec3(1, 0, 0));
@@ -131,6 +141,7 @@ void Game::InteractKey() {
         for (int i = 0; i < keys_.size(); i++) {
             vec3 p = keys_[i]->getPosition();
             vec3 s = keys_[i]->getScale();
+            s *= 5;
             float dx = abs(camera_pos_.x - p.x);
             float dz = abs(camera_pos_.z - p.z);
             if (dx < grab_radius_ + s.x && dz < grab_radius_ + s.z) {
@@ -256,6 +267,53 @@ void Game::Init(GLuint program) {
     door_textures_.push_back(LoadTexture("textures/door_C.bmp"));
     door_textures_.push_back(LoadTexture("textures/door_D.bmp"));
     door_textures_.push_back(LoadTexture("textures/door_E.bmp"));
+
+    // key objs
+    objl::Loader Loader;
+    bool loadout = Loader.LoadFile("key.obj");
+    if (!loadout) {
+        cout << "failed to open/load obj file" << endl;
+        return;
+    }
+    objl::Mesh m = Loader.LoadedMeshes[0];
+    vector<vec3> verts;
+    vector<vec3> norms;
+    for (int i = 0; i < m.Vertices.size(); i++) {
+        float x,y,z;
+        x = m.Vertices[i].Position.X;
+        y = m.Vertices[i].Position.Y;
+        z = m.Vertices[i].Position.Z;
+        verts.push_back(vec3(x,y,z));
+        x = m.Vertices[i].Normal.X;
+        y = m.Vertices[i].Normal.Y;
+        z = m.Vertices[i].Normal.Z;
+        norms.push_back(vec3(x,y,z));
+    }
+    obj_tris_ = m.Indices.size() / 3;
+    vector<unsigned int> indices;
+    for (int i = 0; i < m.Indices.size(); i++) {
+        indices.push_back(m.Indices[i]);
+    }
+
+    glGenVertexArrays(1, &obj_vao_);
+    glBindVertexArray(obj_vao_);
+
+    glGenBuffers(1, &obj_verts_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, obj_verts_vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*m.Vertices.size(), &verts[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(posAttrib);
+    glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glGenBuffers(1, &obj_normals_vbo_);
+    glBindBuffer(GL_ARRAY_BUFFER, obj_normals_vbo_);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vec3)*m.Vertices.size(), &norms[0], GL_STATIC_DRAW);
+    glEnableVertexAttribArray(normalAttrib);
+    glVertexAttribPointer(normalAttrib, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glGenBuffers(1, &obj_ibo_);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obj_ibo_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*m.Indices.size(), &indices[0], GL_STATIC_DRAW);
+
 }
 
 int Game::getID(int r, int c) {
@@ -296,6 +354,7 @@ void Game::Draw(GLuint program) {
     glBindTexture(GL_TEXTURE_2D, wall_texture_);
     glUniform1i(glGetUniformLocation(program, "tex"), 0);
 
+
     glBindVertexArray(cube_vao_);
     for (int r = 0; r < height_; r++) {
         for (int c = 0; c < width_; c++) {
@@ -308,17 +367,17 @@ void Game::Draw(GLuint program) {
             }
         }
     }
-    textured = glGetUniformLocation(program, "textured");
+
+    /*
     glUniform1f(textured, false);
     for (int i = 0; i < keys_.size(); i++) {
         keys_[i]->SendModel(program);
         keys_[i]->SendMaterial(program);
         glDrawArrays(GL_TRIANGLES, 0, 12*3);
     }
+    */
 
-    textured = glGetUniformLocation(program, "textured");
     glUniform1f(textured, true);
-
     for (int i = 0; i < doors_.size(); i++) {
         Door* d = doors_[i];
         d->SendModel(program);
@@ -327,6 +386,14 @@ void Game::Draw(GLuint program) {
         glBindTexture(GL_TEXTURE_2D, door_textures_[d->getDoorID()]);
         glUniform1i(glGetUniformLocation(program, "tex"), 0);
         glDrawArrays(GL_TRIANGLES, 0, 12*3);
+    }
+
+    glBindVertexArray(obj_vao_);
+    glUniform1f(textured, false);
+    for (int i = 0; i < keys_.size(); i++) {
+        keys_[i]->SendModel(program);
+        keys_[i]->SendMaterial(program);
+        glDrawElements(GL_TRIANGLES, obj_tris_*3, GL_UNSIGNED_INT, 0);
     }
 
     glBindVertexArray(floor_vao_);
@@ -410,6 +477,7 @@ bool Game::Parse(string fname) {
                     case 'd':
                     case 'e':
                     {
+                        p.y -= 4;
                         Key *k= new Key(p, o - 'a', o);
                         int id = o - 'a';
                         vec3 ka = vec3(.3, .3, .3);
@@ -426,6 +494,7 @@ bool Game::Parse(string fname) {
                         else if (id == 4)
                             kd = vec3(1, 1, 0);
                         k->setScale(vec3(1, 1, 1));
+                        k->setRotate(vec3(0, (float)M_PI / 2, 0));
                         k->setMaterial(ka, kd, ks);
                         keys_.push_back(k);
                         tmp = k;
