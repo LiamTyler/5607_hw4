@@ -5,9 +5,9 @@
 
 using namespace std;
 
-string MAP = "/home/liam/Documents/School/5607/hw4/maps/base.txt";
-string VERTEX_SHADER = "/home/liam/Documents/School/5607/hw4/shaders/shader.vert";
-string FRAGMENT_SHADER = "/home/liam/Documents/School/5607/hw4/shaders/shader.frag";
+string MAP = "maps/map2.txt";
+string VERTEX_SHADER = "shaders/shader.vert";
+string FRAGMENT_SHADER = "shaders/shader.frag";
 bool fullscreen = false;
 int SW = 800;
 int SH = 600;

@@ -27,7 +27,7 @@ in vec3 vertexInEyeSpace;
 in vec3 normalInEyeSpace;
 
 void main() {
-    // float f = fade / 2;
+    float f = fade / 2;
     vec3 n = normalize(normalInEyeSpace);
     vec3 e = normalize(-vertexInEyeSpace);
     vec3 finalColor = vec3(0.0, 0.0, 0.0);
@@ -57,24 +57,8 @@ void main() {
         }
         finalColor += tmpColor*F;
     }
-    /*
-    vec3 l = normalize(-lightInEyeSpace.xyz);
-    vec3 h = normalize(l + e);
-    float diffuse = max(dot(l, n), 0.0);
-    float specular = pow(max(dot(n, h), 0.0), s);
 
-    if (textured) {
-        finalColor += ka*Ia;
-        finalColor += kd*Id * diffuse * vec3(texture(tex, texCoord));
-        finalColor += ks*Is * specular;
-    } else {
-        finalColor += ka*Ia;
-        finalColor += kd*Id * diffuse;
-        finalColor += ks*Is * specular;
-    }
-    */
-
-    // color.rgb = (1 - f)*finalColor + f*vec3(1,1,1);
-    color.rgb = finalColor;
+    color.rgb = (1 - f)*finalColor + f*vec3(1,1,1);
+    // color.rgb = finalColor;
     color.a = 1.0;
 }

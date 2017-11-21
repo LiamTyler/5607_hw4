@@ -19,12 +19,13 @@ void Door::Open() {
 }
 
 bool Door::Update(float dt) {
+    const float time = 1.6;
     if (!open_)
         return false;
     open_time_ += dt;
-    position_.y += scale_.y * dt / 2;
+    position_.y += scale_.y * dt / time * 3;
 
-    if (open_time_ > 5)
+    if (open_time_ > time)
         return true;
     
     return false;

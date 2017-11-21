@@ -19,7 +19,7 @@ Game::Game(string fname) {
     end_pos_ = vec3(0,0,0);
     aspect_ = 1;
     scale_ = 20*vec3(1, 1, 1);
-    speed_ = 10;
+    speed_ = 50;
     hit_width_ = 2;
     grab_radius_ = 4;
 
@@ -64,7 +64,7 @@ Game::~Game() {
 
 void Game::Update(float dt) {
     float y = camera_pos_.y;
-    vec4 npp = camera_pos_ + 5*speed_*dt*camera_rot_mat_*vec4(camera_vel_, 0);
+    vec4 npp = camera_pos_ + speed_*dt*camera_rot_mat_*vec4(camera_vel_, 0);
     npp.y = y;
     vec3 np = vec3(npp);
     bool hit = false;
@@ -76,7 +76,7 @@ void Game::Update(float dt) {
                 vec3 s = o->getScale();
                 float e = 0;
                 if (grabbed_key_) 
-                    e = 2*grab_radius_;
+                    e = 1*grab_radius_;
                 float dx = abs(np.x - p.x);
                 float dz = abs(np.z - p.z);
                 if (dx < hit_width_ + s.x + e && dz < hit_width_ + s.z + e) {
@@ -112,11 +112,11 @@ void Game::Update(float dt) {
         }
     }
 
-    // if (length(vec3(camera_pos_) - end_pos_) <= 10) {
-    //     fading_ = true;
-    // }
-    // if (fading_)
-    //     fade_ += dt;
+    if (length(vec3(camera_pos_) - end_pos_) <= 10) {
+        fading_ = true;
+    }
+    if (fading_)
+        fade_ += dt;
 }
 
 void Game::UpdateCameraAngle(float xrel, float yrel) {
@@ -494,7 +494,7 @@ bool Game::Parse(string fname) {
                         else if (id == 4)
                             kd = vec3(1, 1, 0);
                         k->setScale(vec3(1, 1, 1));
-                        k->setRotate(vec3(0, (float)M_PI / 2, 0));
+                        // k->setRotate(vec3(0, (float)M_PI / 2, 0));
                         k->setMaterial(ka, kd, ks);
                         keys_.push_back(k);
                         tmp = k;
